@@ -93,3 +93,6 @@ All endpoints are under `/api` and protected by Sanctum (except login).
 - `GET /api/trades?symbol=BTC`
 - `POST /api/orders`
 - `POST /api/orders/{id}/cancel`
+
+## System Architecture & Financial Integrity
+This solution prioritizes data integrity and concurrency safety above all else, treating the application as a financial ledger rather than a standard CRUD app. I implemented **pessimistic locking** (`lockForUpdate`) on both User balances and Asset records within strict **database transactions**. This ensures that double-spending is mathematically impossible, even under high-load parallel request scenarios. The matching engine logic is atomic: funds are reserved, and order status is updated in the same transaction that processes the match, ensuring the system never enters an inconsistent state.
