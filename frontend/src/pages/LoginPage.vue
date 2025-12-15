@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 import { useAuthStore } from "../stores/auth";
 
 const auth = useAuthStore();
+const router = useRouter();
 
 const email = ref("");
 const password = ref("");
+
+async function submit(): Promise<void> {
+  await auth.login(email.value, password.value);
+  await router.push("/exchange");
+}
 </script>
 
 <template>
@@ -18,7 +25,7 @@ const password = ref("");
 
     <form
       class="space-y-4 rounded-xl border border-slate-800 bg-slate-900/40 p-6"
-      @submit.prevent="auth.login(email, password)"
+      @submit.prevent="submit"
     >
       <div class="space-y-1">
         <label class="text-sm text-slate-300">Email</label>
@@ -46,4 +53,3 @@ const password = ref("");
     </form>
   </div>
 </template>
-

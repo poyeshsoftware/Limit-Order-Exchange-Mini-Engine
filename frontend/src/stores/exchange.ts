@@ -74,12 +74,13 @@ export const useExchangeStore = defineStore("exchange", {
     },
 
     async refreshAll(): Promise<void> {
-      await Promise.all([
-        this.fetchProfile(),
-        this.fetchOrderBook(this.selectedSymbol),
-        this.fetchMyOrders(),
-      ]);
+      this.isLoading = true;
+
+      try {
+        await Promise.all([this.fetchProfile(), this.fetchOrderBook(this.selectedSymbol), this.fetchMyOrders()]);
+      } finally {
+        this.isLoading = false;
+      }
     },
   },
 });
-
