@@ -1,0 +1,6 @@
+.DS_Store
+.idea/
+
+# Docker volume data (MySQL)
+docker-compose/mysql/mysql/
+docker-compose/mysql_test/mysql/

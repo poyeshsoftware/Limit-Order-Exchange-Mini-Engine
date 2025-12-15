@@ -1,0 +1,67 @@
+services:
+  mysql_dev:
+    image: mysql:8.0
+    container_name: exchange_mysql_dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: exchange
+      MYSQL_USER: exchange_user
+      MYSQL_PASSWORD: exchange_pass
+    ports:
+      - "21150:3306"
+    volumes:
+      - ./docker-compose/mysql/mysql:/var/lib/mysql
+      - ./docker-compose/mysql/conf:/etc/mysql/conf.d
+      - ./docker-compose/mysql/dump:/docker-entrypoint-initdb.d
+
+  phpmyadmin_dev:
+    image: phpmyadmin:5
+    container_name: exchange_phpmyadmin_dev
+    restart: unless-stopped
+    depends_on:
+      - mysql_dev
+    environment:
+      PMA_HOST: mysql_dev
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "21151:80"
+
+  redis:
+    image: redis:7-alpine
+    container_name: exchange_redis
+    restart: unless-stopped
+    ports:
+      - "21152:6379"
+
+  mysql_test:
+    image: mysql:8.0
+    container_name: exchange_mysql_test
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_test
+      MYSQL_DATABASE: exchange_test
+      MYSQL_USER: exchange_user_test
+      MYSQL_PASSWORD: exchange_pass_test
+    ports:
+      - "21153:3306"
+    volumes:
+      - ./docker-compose/mysql_test/mysql:/var/lib/mysql
+      - ./docker-compose/mysql_test/conf:/etc/mysql/conf.d
+      - ./docker-compose/mysql_test/dump:/docker-entrypoint-initdb.d
+
+  phpmyadmin_test:
+    image: phpmyadmin:5
+    container_name: exchange_phpmyadmin_test
+    restart: unless-stopped
+    depends_on:
+      - mysql_test
+    environment:
+      PMA_HOST: mysql_test
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root_test
+    ports:
+      - "21154:80"
