@@ -11,6 +11,25 @@ use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
+    public function myOrders(Request $request): array
+    {
+        $validated = $request->validate([
+            'symbol' => ['sometimes', 'string', Rule::in(['BTC', 'ETH'])],
+        ]);
+
+        $query = $request->user()
+            ->orders()
+            ->orderBy('created_at', 'desc');
+
+        if (isset($validated['symbol'])) {
+            $query->where('symbol', $validated['symbol']);
+        }
+
+        return [
+            'orders' => $query->get(['id', 'symbol', 'side', 'price', 'amount', 'status', 'created_at']),
+        ];
+    }
+
     public function index(Request $request): array
     {
         $validated = $request->validate([
