@@ -9,8 +9,12 @@ declare global {
 
 let echo: Echo<"pusher"> | null = null;
 
-export function connectEcho(token: string): Echo<"pusher"> {
+export function connectEcho(token: string): Echo<"pusher"> | null {
   if (echo) return echo;
+
+  if (!import.meta.env.VITE_PUSHER_KEY || import.meta.env.VITE_PUSHER_KEY === "xxxx") {
+    return null;
+  }
 
   window.Pusher = Pusher;
 
@@ -35,4 +39,3 @@ export function disconnectEcho(): void {
   echo.disconnect();
   echo = null;
 }
-

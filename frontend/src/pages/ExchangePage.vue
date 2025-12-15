@@ -21,10 +21,12 @@ onMounted(async () => {
   if (auth.token && auth.userId) {
     const echo = connectEcho(auth.token);
 
-    echo.private(`user.${auth.userId}`).listen("OrderMatched", async (payload: any) => {
-      lastMatchMessage.value = `Matched ${payload?.symbol ?? ""}`.trim();
-      await exchange.refreshAll();
-    });
+    if (echo) {
+      echo.private(`user.${auth.userId}`).listen("OrderMatched", async (payload: any) => {
+        lastMatchMessage.value = `Matched ${payload?.symbol ?? ""}`.trim();
+        await exchange.refreshAll();
+      });
+    }
   }
 });
 
