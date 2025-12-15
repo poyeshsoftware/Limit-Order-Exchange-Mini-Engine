@@ -28,6 +28,7 @@ async function submit(): Promise<void> {
       amount: amount.value,
     });
 
+    price.value = "";
     amount.value = "";
   } catch (e: any) {
     error.value = e?.response?.data?.message ?? "Failed to place order.";
@@ -98,4 +99,3 @@ async function submit(): Promise<void> {
     </form>
   </section>
 </template>
-
