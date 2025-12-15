@@ -20,7 +20,7 @@ final class CancelOrderAction
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($lockedOrder->user_id !== $user->id) {
+            if ((int) $lockedOrder->user_id !== (int) $user->id) {
                 throw new AccessDeniedHttpException();
             }
 
@@ -64,4 +64,3 @@ final class CancelOrderAction
         });
     }
 }
-
