@@ -65,37 +65,47 @@ class DemoSeeder extends Seeder
 
         $createOrderAction = app(CreateOrderAction::class);
 
-        $createOrderAction->execute(
-            user: $makerSell,
-            symbol: 'BTC',
-            side: 'sell',
-            price: '110',
-            amount: '0.15',
-        );
+        $btcAmount = '0.15';
+        foreach (['110', '115', '120', '125', '130'] as $price) {
+            $createOrderAction->execute(
+                user: $makerSell,
+                symbol: 'BTC',
+                side: 'sell',
+                price: $price,
+                amount: $btcAmount,
+            );
+        }
 
-        $createOrderAction->execute(
-            user: $makerBuy,
-            symbol: 'BTC',
-            side: 'buy',
-            price: '90',
-            amount: '0.10',
-        );
+        foreach (['100', '95', '90', '85', '80'] as $price) {
+            $createOrderAction->execute(
+                user: $makerBuy,
+                symbol: 'BTC',
+                side: 'buy',
+                price: $price,
+                amount: $btcAmount,
+            );
+        }
 
-        $createOrderAction->execute(
-            user: $makerSell,
-            symbol: 'ETH',
-            side: 'sell',
-            price: '55',
-            amount: '1.5',
-        );
+        $ethAmount = '1.5';
+        foreach (['55', '60', '65', '70', '75'] as $price) {
+            $createOrderAction->execute(
+                user: $makerSell,
+                symbol: 'ETH',
+                side: 'sell',
+                price: $price,
+                amount: $ethAmount,
+            );
+        }
 
-        $createOrderAction->execute(
-            user: $makerBuy,
-            symbol: 'ETH',
-            side: 'buy',
-            price: '35',
-            amount: '2',
-        );
+        foreach (['50', '45', '40', '35', '30'] as $price) {
+            $createOrderAction->execute(
+                user: $makerBuy,
+                symbol: 'ETH',
+                side: 'buy',
+                price: $price,
+                amount: $ethAmount,
+            );
+        }
 
         // Default factory password is "password".
         $this->command?->info('Demo users seeded (password: "password"):');
@@ -105,4 +115,3 @@ class DemoSeeder extends Seeder
         $this->command?->info('- maker.sell@example.com');
     }
 }
-
