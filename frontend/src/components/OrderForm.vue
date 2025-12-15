@@ -2,9 +2,11 @@
 import { computed, ref } from "vue";
 
 import { useExchangeStore } from "../stores/exchange";
+import { useToastStore } from "../stores/toast";
 import { mulDecimalStringByRatio, mulDecimalStrings } from "../utils/decimal";
 
 const exchange = useExchangeStore();
+const toast = useToastStore();
 
 const side = ref<"buy" | "sell">("buy");
 const price = ref("");
@@ -30,9 +32,11 @@ async function submit(): Promise<void> {
 
     price.value = "";
     amount.value = "";
+    toast.success(`Order submitted: ${side.value.toUpperCase()} ${exchange.selectedSymbol}`);
   } catch (e: any) {
-    error.value = e?.response?.data?.message ?? "Failed to place order.";
-    throw e;
+    const message = e?.response?.data?.message ?? "Failed to place order.";
+    error.value = message;
+    toast.error(message);
   } finally {
     isSubmitting.value = false;
   }

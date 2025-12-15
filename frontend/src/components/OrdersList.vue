@@ -2,8 +2,10 @@
 import { computed, ref } from "vue";
 
 import { useExchangeStore } from "../stores/exchange";
+import { useToastStore } from "../stores/toast";
 
 const exchange = useExchangeStore();
+const toast = useToastStore();
 
 const showOnlySelectedSymbol = ref(true);
 const sideFilter = ref<"all" | "buy" | "sell">("all");
@@ -46,6 +48,10 @@ async function cancel(orderId: number): Promise<void> {
   cancelling.value[orderId] = true;
   try {
     await exchange.cancelOrder(orderId);
+    toast.success(`Order #${orderId} cancelled`);
+  } catch (e: any) {
+    const message = e?.response?.data?.message ?? "Failed to cancel order.";
+    toast.error(message);
   } finally {
     cancelling.value[orderId] = false;
   }

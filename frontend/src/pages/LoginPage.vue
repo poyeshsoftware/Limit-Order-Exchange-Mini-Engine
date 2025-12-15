@@ -3,16 +3,23 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { useAuthStore } from "../stores/auth";
+import { useToastStore } from "../stores/toast";
 
 const auth = useAuthStore();
 const router = useRouter();
+const toast = useToastStore();
 
 const email = ref("");
 const password = ref("");
 
 async function submit(): Promise<void> {
-  await auth.login(email.value, password.value);
-  await router.push("/exchange");
+  try {
+    await auth.login(email.value, password.value);
+    toast.success("Signed in");
+    await router.push("/exchange");
+  } catch {
+    toast.error(auth.error ?? "Login failed.");
+  }
 }
 </script>
 

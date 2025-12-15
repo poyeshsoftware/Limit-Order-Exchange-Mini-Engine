@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import OrderBook from "../components/OrderBook.vue";
@@ -9,11 +9,12 @@ import WalletOverview from "../components/WalletOverview.vue";
 import { disconnectEcho, connectEcho } from "../realtime/echo";
 import { useAuthStore } from "../stores/auth";
 import { useExchangeStore } from "../stores/exchange";
+import { useToastStore } from "../stores/toast";
 
 const router = useRouter();
 const auth = useAuthStore();
 const exchange = useExchangeStore();
-const lastMatchMessage = ref<string | null>(null);
+const toast = useToastStore();
 let pollInterval: number | null = null;
 
 function startPolling(): void {
@@ -47,7 +48,8 @@ onMounted(async () => {
 
   if (echo) {
     echo.private(`user.${auth.userId}`).listen("OrderMatched", async (payload: any) => {
-      lastMatchMessage.value = `Matched ${payload?.symbol ?? ""}`.trim();
+      const symbol = String(payload?.symbol ?? exchange.selectedSymbol);
+      toast.success(`Matched ${symbol}`);
       await exchange.refreshAll();
     });
   } else {
@@ -97,10 +99,6 @@ function logout(): void {
           Logout
         </button>
       </div>
-    </div>
-
-    <div v-if="lastMatchMessage" class="rounded-lg border border-emerald-900 bg-emerald-950/30 px-4 py-3 text-sm">
-      {{ lastMatchMessage }}
     </div>
 
     <div class="grid gap-6 lg:grid-cols-2">
