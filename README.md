@@ -1,6 +1,6 @@
 # Limit-Order Exchange Mini Engine (Laravel + Vue)
 
-## Video URL about how it wokrs:
+## Video URL of how it wokrs:
 https://payamblog.com/Limit-Order%20Exchange%20Mini%20Engine.mov
 
 Monorepo with:
