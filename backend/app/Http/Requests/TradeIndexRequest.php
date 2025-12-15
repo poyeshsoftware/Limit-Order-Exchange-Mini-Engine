@@ -14,10 +14,18 @@ class TradeIndexRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        if (!$this->has('symbol')) {
+            return;
+        }
+
         $symbol = $this->input('symbol');
 
+        if (!is_string($symbol)) {
+            return;
+        }
+
         $this->merge([
-            'symbol' => is_string($symbol) ? strtoupper($symbol) : $symbol,
+            'symbol' => strtoupper($symbol),
         ]);
     }
 
@@ -29,4 +37,3 @@ class TradeIndexRequest extends FormRequest
         ];
     }
 }
-
