@@ -29,8 +29,7 @@ cd backend
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate:fresh
-php artisan db:seed
+php artisan migrate:fresh --seed
 php artisan serve --port=8000
 ```
 
@@ -60,6 +59,8 @@ npm run dev
 
 Open: `http://localhost:5173`
 
+If you want realtime updates, set `VITE_PUSHER_KEY` and `VITE_PUSHER_CLUSTER` in `frontend/.env` and restart Vite.
+
 ## 4) Realtime (Pusher)
 To enable realtime order-matched broadcasts you need a Pusher Channels app:
 1. Create an app on https://pusher.com/channels
@@ -82,8 +83,9 @@ php artisan test
 ## 6) Useful API endpoints
 All endpoints are under `/api` and protected by Sanctum (except login).
 - `POST /api/login`
+- `POST /api/logout`
 - `GET /api/profile`
+- `GET /api/my-orders`
 - `GET /api/orders?symbol=BTC`
 - `POST /api/orders`
 - `POST /api/orders/{id}/cancel`
-
