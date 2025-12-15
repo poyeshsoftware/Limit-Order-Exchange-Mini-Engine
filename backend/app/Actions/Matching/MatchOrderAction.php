@@ -89,6 +89,8 @@ final class MatchOrderAction
             $trade = Trade::create([
                 'buy_order_id' => $buyOrder->id,
                 'sell_order_id' => $sellOrder->id,
+                'buyer_id' => $buyer->id,
+                'seller_id' => $seller->id,
                 'symbol' => $incoming->symbol,
                 'price' => $tradePrice,
                 'amount' => $amount,
