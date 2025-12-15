@@ -37,12 +37,25 @@ export type MyOrder = {
   created_at: string;
 };
 
+export type Trade = {
+  id: number;
+  symbol: Symbol;
+  buy_order_id: number;
+  sell_order_id: number;
+  price: string;
+  amount: string;
+  usd_volume: string;
+  fee_usd: string;
+  created_at: string;
+};
+
 export const useExchangeStore = defineStore("exchange", {
   state: () => ({
     selectedSymbol: "BTC" as Symbol,
     profile: null as Profile | null,
     orderBook: { buy: [], sell: [] } as OrderBook,
     myOrders: [] as MyOrder[],
+    trades: [] as Trade[],
     isLoading: false as boolean,
   }),
   actions: {
@@ -63,6 +76,11 @@ export const useExchangeStore = defineStore("exchange", {
       this.myOrders = res.data.orders;
     },
 
+    async fetchTrades(symbol: Symbol, limit = 50): Promise<void> {
+      const res = await http.get<{ trades: Trade[] }>("/api/trades", { params: { symbol, limit } });
+      this.trades = res.data.trades;
+    },
+
     async placeOrder(payload: { symbol: Symbol; side: "buy" | "sell"; price: string; amount: string }): Promise<void> {
       await http.post("/api/orders", payload);
       await this.refreshAll();
@@ -77,7 +95,12 @@ export const useExchangeStore = defineStore("exchange", {
       this.isLoading = true;
 
       try {
-        await Promise.all([this.fetchProfile(), this.fetchOrderBook(this.selectedSymbol), this.fetchMyOrders()]);
+        await Promise.all([
+          this.fetchProfile(),
+          this.fetchOrderBook(this.selectedSymbol),
+          this.fetchMyOrders(),
+          this.fetchTrades(this.selectedSymbol),
+        ]);
       } finally {
         this.isLoading = false;
       }

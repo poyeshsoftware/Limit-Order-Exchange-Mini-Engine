@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 import OrderBook from "../components/OrderBook.vue";
 import OrderForm from "../components/OrderForm.vue";
 import OrdersList from "../components/OrdersList.vue";
+import TradeHistory from "../components/TradeHistory.vue";
 import WalletOverview from "../components/WalletOverview.vue";
 import { disconnectEcho, connectEcho } from "../realtime/echo";
 import { useAuthStore } from "../stores/auth";
@@ -60,7 +61,7 @@ onMounted(async () => {
 watch(
   () => exchange.selectedSymbol,
   async (symbol) => {
-    await exchange.fetchOrderBook(symbol);
+    await Promise.all([exchange.fetchOrderBook(symbol), exchange.fetchTrades(symbol)]);
   }
 );
 
@@ -110,5 +111,7 @@ function logout(): void {
       <OrdersList />
       <OrderBook />
     </div>
+
+    <TradeHistory />
   </div>
 </template>
