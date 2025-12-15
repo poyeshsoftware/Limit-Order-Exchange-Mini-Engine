@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,5 +45,38 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeOpen(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_OPEN);
+    }
+
+    public function scopeForSymbol(Builder $query, string $symbol): Builder
+    {
+        return $query->where('symbol', strtoupper($symbol));
+    }
+
+    public function scopeForSide(Builder $query, string $side): Builder
+    {
+        return $query->where('side', strtolower($side));
+    }
+
+    public function scopeOpenBook(Builder $query, string $symbol, string $side): Builder
+    {
+        $side = strtolower($side);
+
+        $query
+            ->forSymbol($symbol)
+            ->open()
+            ->forSide($side);
+
+        if ($side === self::SIDE_BUY) {
+            $query->orderBy('price', 'desc');
+        } else {
+            $query->orderBy('price', 'asc');
+        }
+
+        return $query->orderBy('created_at', 'asc');
     }
 }

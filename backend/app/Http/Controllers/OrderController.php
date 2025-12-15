@@ -43,19 +43,11 @@ class OrderController extends Controller
         $symbol = $validated['symbol'];
 
         $buy = Order::query()
-            ->where('symbol', $symbol)
-            ->where('status', Order::STATUS_OPEN)
-            ->where('side', Order::SIDE_BUY)
-            ->orderBy('price', 'desc')
-            ->orderBy('created_at', 'asc')
+            ->openBook($symbol, Order::SIDE_BUY)
             ->get(['id', 'price', 'amount', 'created_at']);
 
         $sell = Order::query()
-            ->where('symbol', $symbol)
-            ->where('status', Order::STATUS_OPEN)
-            ->where('side', Order::SIDE_SELL)
-            ->orderBy('price', 'asc')
-            ->orderBy('created_at', 'asc')
+            ->openBook($symbol, Order::SIDE_SELL)
             ->get(['id', 'price', 'amount', 'created_at']);
 
         return [
