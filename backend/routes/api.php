@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -13,6 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', ProfileController::class);
     Route::get('/my-orders', [OrderController::class, 'myOrders']);
     Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/trades', [TradeController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
 });

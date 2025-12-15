@@ -286,4 +286,44 @@ class ExchangeEngineTest extends TestCase
 
         $this->assertSame(1, $orderCount);
     }
+
+    public function test_trades_endpoint_returns_trade_history(): void
+    {
+        $seller = User::factory()->create(['balance' => '0']);
+        Asset::factory()->create([
+            'user_id' => $seller->id,
+            'symbol' => 'BTC',
+            'amount' => '1',
+            'locked_amount' => '0',
+        ]);
+
+        $buyer = User::factory()->create(['balance' => '1000']);
+
+        Sanctum::actingAs($seller);
+        $this->postJson('/api/orders', [
+            'symbol' => 'BTC',
+            'side' => 'sell',
+            'price' => '90',
+            'amount' => '1',
+        ])->assertStatus(201);
+
+        Sanctum::actingAs($buyer);
+        $this->postJson('/api/orders', [
+            'symbol' => 'BTC',
+            'side' => 'buy',
+            'price' => '100',
+            'amount' => '1',
+        ])->assertStatus(201);
+
+        $this->assertSame(1, Trade::query()->count());
+
+        $response = $this->getJson('/api/trades?symbol=BTC');
+        $response->assertOk();
+        $response->assertJsonCount(1, 'trades');
+
+        $trade = $response->json('trades.0');
+        $this->assertSame('BTC', $trade['symbol']);
+        $this->assertSame('90.00000000', $trade['usd_volume']);
+        $this->assertSame('1.35000000', $trade['fee_usd']);
+    }
 }
