@@ -2,20 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\LogoutRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function login(Request $request): array
+    public function login(LoginRequest $request): array
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-            'device_name' => ['sometimes', 'string', 'max:255'],
-        ]);
+        $credentials = $request->validated();
 
         $user = User::query()->where('email', $credentials['email'])->first();
 
@@ -36,7 +33,7 @@ class AuthController extends Controller
         ];
     }
 
-    public function logout(Request $request): array
+    public function logout(LogoutRequest $request): array
     {
         $request->user()->currentAccessToken()?->delete();
 

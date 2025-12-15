@@ -2,19 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TradeIndexRequest;
 use App\Http\Resources\TradeResource;
 use App\Models\Trade;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class TradeController extends Controller
 {
-    public function index(Request $request): array
+    public function index(TradeIndexRequest $request): array
     {
-        $validated = $request->validate([
-            'symbol' => ['required', 'string', Rule::in(['BTC', 'ETH'])],
-            'limit' => ['sometimes', 'integer', 'min:1', 'max:200'],
-        ]);
+        $validated = $request->validated();
 
         $limit = $validated['limit'] ?? 50;
 

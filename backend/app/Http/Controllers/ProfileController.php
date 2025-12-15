@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileRequest;
 use App\Http\Resources\ProfileResource;
-use Illuminate\Http\Request;
 
 class ProfileController extends Controller
 {
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request): array
+    public function __invoke(ProfileRequest $request): array
     {
         return ProfileResource::make($request->user())->resolve();
     }

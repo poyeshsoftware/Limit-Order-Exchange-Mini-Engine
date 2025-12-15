@@ -4,20 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Actions\Orders\CancelOrderAction;
 use App\Actions\Orders\CreateOrderAction;
+use App\Http\Requests\CancelOrderRequest;
+use App\Http\Requests\MyOrdersRequest;
+use App\Http\Requests\OrderBookRequest;
 use App\Http\Resources\OrderBookOrderResource;
 use App\Http\Resources\OrderResource;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
-    public function myOrders(Request $request): array
+    public function myOrders(MyOrdersRequest $request): array
     {
-        $validated = $request->validate([
-            'symbol' => ['sometimes', 'string', Rule::in(['BTC', 'ETH'])],
-        ]);
+        $validated = $request->validated();
 
         $query = $request->user()
             ->orders()
@@ -34,13 +33,9 @@ class OrderController extends Controller
         ];
     }
 
-    public function index(Request $request): array
+    public function index(OrderBookRequest $request): array
     {
-        $validated = $request->validate([
-            'symbol' => ['required', 'string', Rule::in(['BTC', 'ETH'])],
-        ]);
-
-        $symbol = $validated['symbol'];
+        $symbol = $request->validated()['symbol'];
 
         $buy = Order::query()
             ->openBook($symbol, Order::SIDE_BUY)
@@ -79,7 +74,7 @@ class OrderController extends Controller
         ], 201);
     }
 
-    public function cancel(Request $request, Order $order, CancelOrderAction $cancelOrderAction): array
+    public function cancel(CancelOrderRequest $request, Order $order, CancelOrderAction $cancelOrderAction): array
     {
         $cancelled = $cancelOrderAction->execute($request->user(), $order);
 
