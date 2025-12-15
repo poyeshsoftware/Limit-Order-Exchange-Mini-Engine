@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TradeResource;
 use App\Models\Trade;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -34,8 +35,7 @@ class TradeController extends Controller
             ]);
 
         return [
-            'trades' => $trades,
+            'trades' => TradeResource::collection($trades)->resolve(),
         ];
     }
 }
-

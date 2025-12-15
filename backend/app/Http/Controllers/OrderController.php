@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\Orders\CancelOrderAction;
 use App\Actions\Orders\CreateOrderAction;
+use App\Http\Resources\OrderBookOrderResource;
+use App\Http\Resources\OrderResource;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -25,8 +27,10 @@ class OrderController extends Controller
             $query->where('symbol', $validated['symbol']);
         }
 
+        $orders = $query->get(['id', 'symbol', 'side', 'price', 'amount', 'status', 'created_at']);
+
         return [
-            'orders' => $query->get(['id', 'symbol', 'side', 'price', 'amount', 'status', 'created_at']),
+            'orders' => OrderResource::collection($orders)->resolve(),
         ];
     }
 
@@ -55,8 +59,8 @@ class OrderController extends Controller
             ->get(['id', 'price', 'amount', 'created_at']);
 
         return [
-            'buy' => $buy,
-            'sell' => $sell,
+            'buy' => OrderBookOrderResource::collection($buy)->resolve(),
+            'sell' => OrderBookOrderResource::collection($sell)->resolve(),
         ];
     }
 
