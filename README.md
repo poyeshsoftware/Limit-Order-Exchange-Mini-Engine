@@ -87,5 +87,6 @@ All endpoints are under `/api` and protected by Sanctum (except login).
 - `GET /api/profile`
 - `GET /api/my-orders`
 - `GET /api/orders?symbol=BTC`
+- `GET /api/trades?symbol=BTC`
 - `POST /api/orders`
 - `POST /api/orders/{id}/cancel`
