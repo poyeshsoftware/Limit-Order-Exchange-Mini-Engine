@@ -14,6 +14,22 @@ const router = useRouter();
 const auth = useAuthStore();
 const exchange = useExchangeStore();
 const lastMatchMessage = ref<string | null>(null);
+let pollInterval: number | null = null;
+
+function startPolling(): void {
+  if (pollInterval !== null) return;
+
+  pollInterval = window.setInterval(async () => {
+    if (exchange.isLoading) return;
+    await exchange.refreshAll();
+  }, 2000);
+}
+
+function stopPolling(): void {
+  if (pollInterval === null) return;
+  window.clearInterval(pollInterval);
+  pollInterval = null;
+}
 
 onMounted(async () => {
   await exchange.refreshAll();
@@ -26,6 +42,8 @@ onMounted(async () => {
         lastMatchMessage.value = `Matched ${payload?.symbol ?? ""}`.trim();
         await exchange.refreshAll();
       });
+    } else {
+      startPolling();
     }
   }
 });
@@ -38,11 +56,13 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  stopPolling();
   disconnectEcho();
 });
 
 function logout(): void {
   auth.logout();
+  stopPolling();
   disconnectEcho();
   router.push("/login");
 }
