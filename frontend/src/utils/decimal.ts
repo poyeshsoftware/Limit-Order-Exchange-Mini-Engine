@@ -6,7 +6,7 @@ export function parseDecimalToAtomic(value: string): bigint | null {
   if (!normalized) return null;
   if (!/^\d+(\.\d+)?$/.test(normalized)) return null;
 
-  const [intPart, fracPart = ""] = normalized.split(".");
+  const [intPart = "0", fracPart = ""] = normalized.split(".");
   const frac = (fracPart + "0".repeat(Number(SCALE))).slice(0, Number(SCALE));
 
   return BigInt(intPart) * MULTIPLIER + BigInt(frac);
@@ -44,4 +44,3 @@ export function mulDecimalStringByRatio(
   const rounded = (atomic * numerator + denominator / 2n) / denominator;
   return formatAtomicToDecimal(rounded);
 }
-
