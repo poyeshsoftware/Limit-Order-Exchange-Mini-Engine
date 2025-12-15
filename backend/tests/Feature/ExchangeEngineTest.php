@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Orders\CreateOrderAction;
 use App\Models\Asset;
 use App\Models\Order;
 use App\Models\Trade;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -203,5 +206,84 @@ class ExchangeEngineTest extends TestCase
         $order = Order::query()->findOrFail($orderId);
         $this->assertSame(Order::STATUS_OPEN, $order->status);
     }
-}
 
+    public function test_concurrent_buy_orders_cannot_overspend_balance(): void
+    {
+        if (!function_exists('pcntl_fork')) {
+            $this->markTestSkipped('pcntl extension is required for concurrency test.');
+        }
+
+        $user = User::factory()->create([
+            'balance' => '100',
+        ]);
+
+        $processes = 8;
+        $tmpDir = sys_get_temp_dir().'/exchange-concurrency-'.uniqid('', true);
+        $barrierFile = $tmpDir.'/barrier';
+
+        $this->assertTrue(mkdir($tmpDir, 0700, true));
+        file_put_contents($barrierFile, 'wait');
+
+        $children = [];
+
+        for ($i = 0; $i < $processes; $i++) {
+            $pid = pcntl_fork();
+
+            if ($pid === -1) {
+                $this->fail('Failed to fork child process.');
+            }
+
+            if ($pid === 0) {
+                while (trim((string) file_get_contents($barrierFile)) !== 'go') {
+                    usleep(1_000);
+                }
+
+                DB::disconnect();
+                DB::reconnect();
+
+                $success = 0;
+                try {
+                    app(CreateOrderAction::class)->execute(
+                        user: User::query()->findOrFail($user->id),
+                        symbol: 'BTC',
+                        side: 'buy',
+                        price: '100',
+                        amount: '1',
+                    );
+                    $success = 1;
+                } catch (ValidationException) {
+                    $success = 0;
+                }
+
+                file_put_contents($tmpDir."/result-{$i}", (string) $success);
+                exit(0);
+            }
+
+            $children[] = $pid;
+        }
+
+        file_put_contents($barrierFile, 'go');
+
+        foreach ($children as $pid) {
+            pcntl_waitpid($pid, $status);
+        }
+
+        $successes = 0;
+        for ($i = 0; $i < $processes; $i++) {
+            $successes += (int) trim((string) file_get_contents($tmpDir."/result-{$i}"));
+        }
+
+        $this->assertSame(1, $successes);
+
+        $user->refresh();
+        $this->assertSame('0.00000000', $user->balance);
+
+        $orderCount = Order::query()
+            ->where('user_id', $user->id)
+            ->where('symbol', 'BTC')
+            ->where('side', 'buy')
+            ->count();
+
+        $this->assertSame(1, $orderCount);
+    }
+}
