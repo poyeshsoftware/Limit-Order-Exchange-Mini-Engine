@@ -6,11 +6,31 @@ import { useExchangeStore } from "../stores/exchange";
 const exchange = useExchangeStore();
 
 const showOnlySelectedSymbol = ref(true);
+const sideFilter = ref<"all" | "buy" | "sell">("all");
+const statusFilter = ref<"all" | "open" | "filled" | "cancelled">("all");
+const cancelling = ref<Record<number, boolean>>({});
 
 const orders = computed(() => {
-  const all = exchange.myOrders;
-  if (!showOnlySelectedSymbol.value) return all;
-  return all.filter((o) => o.symbol === exchange.selectedSymbol);
+  let all = exchange.myOrders;
+
+  if (showOnlySelectedSymbol.value) {
+    all = all.filter((o) => o.symbol === exchange.selectedSymbol);
+  }
+
+  if (sideFilter.value !== "all") {
+    all = all.filter((o) => o.side === sideFilter.value);
+  }
+
+  if (statusFilter.value !== "all") {
+    const status =
+      statusFilter.value === "open" ? 1 : statusFilter.value === "filled" ? 2 : statusFilter.value === "cancelled" ? 3 : null;
+
+    if (status !== null) {
+      all = all.filter((o) => o.status === status);
+    }
+  }
+
+  return all;
 });
 
 function statusLabel(status: number): string {
@@ -19,16 +39,42 @@ function statusLabel(status: number): string {
   if (status === 3) return "Cancelled";
   return String(status);
 }
+
+async function cancel(orderId: number): Promise<void> {
+  if (cancelling.value[orderId]) return;
+
+  cancelling.value[orderId] = true;
+  try {
+    await exchange.cancelOrder(orderId);
+  } finally {
+    cancelling.value[orderId] = false;
+  }
+}
 </script>
 
 <template>
   <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
     <div class="flex items-center justify-between">
       <h2 class="text-lg font-semibold">My Orders</h2>
-      <label class="flex items-center gap-2 text-sm text-slate-300">
-        <input v-model="showOnlySelectedSymbol" type="checkbox" class="accent-indigo-600" />
-        Only {{ exchange.selectedSymbol }}
-      </label>
+      <div class="flex flex-col items-end gap-3 md:flex-row md:items-center">
+        <label class="flex items-center gap-2 text-sm text-slate-300">
+          <input v-model="showOnlySelectedSymbol" type="checkbox" class="accent-indigo-600" />
+          Only {{ exchange.selectedSymbol }}
+        </label>
+
+        <select v-model="sideFilter" class="rounded-lg bg-slate-950 px-2 py-1 text-xs text-slate-200">
+          <option value="all">All sides</option>
+          <option value="buy">Buy</option>
+          <option value="sell">Sell</option>
+        </select>
+
+        <select v-model="statusFilter" class="rounded-lg bg-slate-950 px-2 py-1 text-xs text-slate-200">
+          <option value="all">All statuses</option>
+          <option value="open">Open</option>
+          <option value="filled">Filled</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
     </div>
 
     <div v-if="orders.length === 0" class="mt-4 text-sm text-slate-400">No orders.</div>
@@ -59,11 +105,12 @@ function statusLabel(status: number): string {
             <td class="px-3 py-2">
               <button
                 v-if="order.status === 1"
-                class="rounded-lg bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700"
+                class="rounded-lg bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700 disabled:opacity-60"
                 type="button"
-                @click="exchange.cancelOrder(order.id)"
+                :disabled="Boolean(cancelling[order.id])"
+                @click="cancel(order.id)"
               >
-                Cancel
+                {{ cancelling[order.id] ? "Cancelling..." : "Cancel" }}
               </button>
               <span v-else class="text-xs text-slate-500">—</span>
             </td>
@@ -73,4 +120,3 @@ function statusLabel(status: number): string {
     </div>
   </section>
 </template>
-
