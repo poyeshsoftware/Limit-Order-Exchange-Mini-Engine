@@ -36,6 +36,31 @@ class OrderMatched implements ShouldBroadcast
         ];
     }
 
+    public function broadcastWhen(): bool
+    {
+        if (config('broadcasting.default') !== 'pusher') {
+            return false;
+        }
+
+        $pusherKey = trim((string) config('broadcasting.connections.pusher.key', ''));
+        $pusherSecret = trim((string) config('broadcasting.connections.pusher.secret', ''));
+        $pusherAppId = trim((string) config('broadcasting.connections.pusher.app_id', ''));
+
+        if ($pusherKey === '' || $pusherKey === 'xxxx') {
+            return false;
+        }
+
+        if ($pusherSecret === '' || $pusherSecret === 'xxxx') {
+            return false;
+        }
+
+        if ($pusherAppId === '' || $pusherAppId === 'xxxx') {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * @return array<string, mixed>
      */
