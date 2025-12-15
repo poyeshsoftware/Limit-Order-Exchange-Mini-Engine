@@ -34,17 +34,24 @@ function stopPolling(): void {
 onMounted(async () => {
   await exchange.refreshAll();
 
-  if (auth.token && auth.userId) {
-    const echo = connectEcho(auth.token);
+  if (!auth.token) {
+    return;
+  }
 
-    if (echo) {
-      echo.private(`user.${auth.userId}`).listen("OrderMatched", async (payload: any) => {
-        lastMatchMessage.value = `Matched ${payload?.symbol ?? ""}`.trim();
-        await exchange.refreshAll();
-      });
-    } else {
-      startPolling();
-    }
+  if (!auth.userId) {
+    startPolling();
+    return;
+  }
+
+  const echo = connectEcho(auth.token);
+
+  if (echo) {
+    echo.private(`user.${auth.userId}`).listen("OrderMatched", async (payload: any) => {
+      lastMatchMessage.value = `Matched ${payload?.symbol ?? ""}`.trim();
+      await exchange.refreshAll();
+    });
+  } else {
+    startPolling();
   }
 });
 
