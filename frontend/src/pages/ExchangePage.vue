@@ -19,9 +19,9 @@ let pollInterval: number | null = null;
 function startPolling(): void {
   if (pollInterval !== null) return;
 
-  pollInterval = window.setInterval(async () => {
+  pollInterval = window.setInterval(() => {
     if (exchange.isLoading) return;
-    await exchange.refreshAll();
+    exchange.refreshAll().catch(() => {});
   }, 2000);
 }
 
