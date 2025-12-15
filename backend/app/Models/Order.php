@@ -62,6 +62,11 @@ class Order extends Model
         return $query->where('side', strtolower($side));
     }
 
+    public function scopeLatestFirst(Builder $query): Builder
+    {
+        return $query->orderBy('created_at', 'desc');
+    }
+
     public function scopeOpenBook(Builder $query, string $symbol, string $side): Builder
     {
         $side = strtolower($side);

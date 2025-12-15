@@ -21,10 +21,10 @@ class OrderController extends Controller
 
         $query = $request->user()
             ->orders()
-            ->orderBy('created_at', 'desc');
+            ->latestFirst();
 
         if (isset($validated['symbol'])) {
-            $query->where('symbol', $validated['symbol']);
+            $query->forSymbol($validated['symbol']);
         }
 
         $orders = $query->get(['id', 'symbol', 'side', 'price', 'amount', 'status', 'created_at']);
